@@ -16,6 +16,17 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      connect-timeout: 2000
+      timeout: 2000
+  cache:
+    type: redis
+    redis:
+      time-to-live: 300000  # 5 minutes in milliseconds
+      cache-null-values: false
 
 jwt:
   secret: ${JWT_SECRET:dfsfjsdfkjsdfksdfksdfksdfsdfsdfksdfksdfksdfsdfsfdsdf}
@@ -35,3 +46,4 @@ management:
 logging:
   level:
     com.cloudcart: INFO
+    com.cloudcart.product.cache: DEBUG

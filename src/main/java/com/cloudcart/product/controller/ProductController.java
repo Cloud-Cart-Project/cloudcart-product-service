@@ -1,9 +1,10 @@
 package com.cloudcart.product.controller;
 
 import com.cloudcart.product.entity.Product;
-import com.cloudcart.product.repository.ProductRepository;
+import com.cloudcart.product.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 
@@ -11,59 +12,51 @@ import java.util.Map;
 @RequestMapping("/products")
 public class ProductController {
 
-    private final ProductRepository productRepository;
+    private final ProductService productService;
 
-    public ProductController(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
+
+    // ─── READ ──────────────────────────────────────────────────────────────────
 
     @GetMapping
     public List<Product> getProducts(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String category) {
         if (search != null && !search.isEmpty()) {
-            return productRepository.findByNameContainingIgnoreCase(search);
+            return productService.searchProducts(search);
         } else if (category != null && !category.isEmpty()) {
-            return productRepository.findByCategory(category);
+            return productService.getProductsByCategory(category);
         }
-        return productRepository.findAll();
+        return productService.getAllProducts();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Long id) {
-        return productRepository.findById(id)
+        return productService.getProductById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // ─── WRITE (all evict cache via ProductService) ────────────────────────────
+
     @PostMapping
     public Product createProduct(@RequestBody Product product) {
-        return productRepository.save(product);
+        return productService.createProduct(product);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
-        return productRepository.findById(id)
-                .map(product -> {
-                    product.setName(productDetails.getName());
-                    product.setDescription(productDetails.getDescription());
-                    product.setCategory(productDetails.getCategory());
-                    product.setPrice(productDetails.getPrice());
-                    product.setStock(productDetails.getStock());
-                    product.setImageUrl(productDetails.getImageUrl());
-                    return ResponseEntity.ok(productRepository.save(product));
-                })
+        return productService.updateProduct(id, productDetails)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        return productRepository.findById(id)
-                .map(product -> {
-                    productRepository.delete(product);
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        boolean deleted = productService.deleteProduct(id);
+        return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     @PatchMapping("/{id}/stock")
@@ -72,22 +65,12 @@ public class ProductController {
             return ResponseEntity.badRequest().body("Missing 'quantity' in payload");
         }
 
-        Integer diff = payload.get("quantity");
-        
-        // 1. Check if product exists
-        if (!productRepository.existsById(id)) {
-            return ResponseEntity.status(404).body("Product not found");
-        }
+        ProductService.StockUpdateResult result = productService.updateStock(id, payload.get("quantity"));
 
-        // 2. Attempt thread-safe update
-        int updatedRows = productRepository.updateStockSafely(id, diff);
-        
-        if (updatedRows == 0) {
-            // Since we know it exists, updatedRows=0 means stock condition failed
-            return ResponseEntity.status(409).body("Insufficient stock");
-        }
-        
-        // 3. Return the updated product
-        return ResponseEntity.ok(productRepository.findById(id).orElse(null));
+        return switch (result) {
+            case SUCCESS -> ResponseEntity.ok(productService.findById(id).orElse(null));
+            case NOT_FOUND -> ResponseEntity.status(404).body("Product not found");
+            case INSUFFICIENT_STOCK -> ResponseEntity.status(409).body("Insufficient stock");
+        };
     }
 }
