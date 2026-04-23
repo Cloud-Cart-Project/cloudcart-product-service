@@ -1,4 +1,4 @@
-﻿package com.fleetops.vehicle.security;
+package com.fleetops.vehicle.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

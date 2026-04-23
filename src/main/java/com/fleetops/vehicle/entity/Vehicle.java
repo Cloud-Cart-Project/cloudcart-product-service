@@ -1,4 +1,4 @@
-﻿package com.fleetops.vehicle.entity;
+package com.fleetops.vehicle.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;

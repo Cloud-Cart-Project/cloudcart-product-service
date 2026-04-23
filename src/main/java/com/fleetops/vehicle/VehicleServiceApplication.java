@@ -1,4 +1,4 @@
-﻿package com.fleetops.vehicle;
+package com.fleetops.vehicle;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

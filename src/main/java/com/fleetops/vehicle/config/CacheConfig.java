@@ -1,4 +1,4 @@
-﻿package com.fleetops.vehicle.config;
+package com.fleetops.vehicle.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

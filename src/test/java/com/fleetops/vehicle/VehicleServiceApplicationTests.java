@@ -1,4 +1,4 @@
-﻿package com.fleetops.vehicle;
+package com.fleetops.vehicle;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

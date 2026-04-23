@@ -1,4 +1,4 @@
-﻿package com.fleetops.vehicle.repository;
+package com.fleetops.vehicle.repository;
 
 import com.fleetops.vehicle.entity.Vehicle;
 import com.fleetops.vehicle.entity.Vehicle.VehicleStatus;

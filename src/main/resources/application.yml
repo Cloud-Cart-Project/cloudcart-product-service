@@ -1,4 +1,4 @@
-﻿spring:
+spring:
   application:
     name: vehicle-service
   datasource:

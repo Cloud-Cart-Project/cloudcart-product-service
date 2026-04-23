@@ -1,4 +1,4 @@
-﻿package com.fleetops.vehicle.service;
+package com.fleetops.vehicle.service;
 
 import com.fleetops.vehicle.entity.Vehicle;
 import com.fleetops.vehicle.entity.Vehicle.VehicleStatus;
