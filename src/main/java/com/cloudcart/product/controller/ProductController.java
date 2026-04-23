@@ -67,18 +67,27 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}/stock")
-    public ResponseEntity<Product> updateStock(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
+    public ResponseEntity<?> updateStock(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
         if (!payload.containsKey("quantity")) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Missing 'quantity' in payload");
         }
 
         Integer diff = payload.get("quantity");
         
-        return productRepository.findById(id)
-                .map(product -> {
-                    product.setStock(product.getStock() + diff);
-                    return ResponseEntity.ok(productRepository.save(product));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        // 1. Check if product exists
+        if (!productRepository.existsById(id)) {
+            return ResponseEntity.status(404).body("Product not found");
+        }
+
+        // 2. Attempt thread-safe update
+        int updatedRows = productRepository.updateStockSafely(id, diff);
+        
+        if (updatedRows == 0) {
+            // Since we know it exists, updatedRows=0 means stock condition failed
+            return ResponseEntity.status(409).body("Insufficient stock");
+        }
+        
+        // 3. Return the updated product
+        return ResponseEntity.ok(productRepository.findById(id).orElse(null));
     }
 }
