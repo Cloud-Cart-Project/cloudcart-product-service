@@ -1,20 +1,20 @@
-# 🚛 FleetOps Vehicle Service
+# FleetOps Vehicle Service
 
 The Vehicle Service manages the core **fleet catalog and real-time telemetry/KPIs** for the FleetOps Vehicle Maintenance Platform. 
 
-## 🛠️ Tech Stack
+## Tech Stack
 *   **Framework:** Spring Boot 3.4
 *   **Database:** PostgreSQL (uses `vehicle_db`)
 *   **Caching:** Redis 7 (for fast dashboard KPI retrieval)
 *   **Authentication:** Stateless JWT (Validated via `JwtAuthenticationFilter`)
 
-## 🎯 Responsibilities
+## Responsibilities
 *   **Fleet Catalog:** Full CRUD operations on the vehicle list (managed by ADMINs).
 *   **Lifecycle Management:** Tracks statuses like `ACTIVE`, `BREAKDOWN`, `IN_SERVICE`, and `RETIRED`.
 *   **KPI Computation:** Calculates total active vehicles, breakdown counts, expiring insurance, and due service alerts dynamically.
 *   **Caching:** Uses Redis to temporarily cache the intensive KPI dashboard computations.
 
-## 📡 API Endpoints
+## API Endpoints
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
@@ -26,7 +26,7 @@ The Vehicle Service manages the core **fleet catalog and real-time telemetry/KPI
 | `DELETE` | `/vehicles/{id}` | ADMIN | Delete/Retire vehicle |
 | `PATCH` | `/vehicles/{id}/status` | Authenticated | Update vehicle lifecycle state |
 
-## 🚀 Running Locally
+## Running Locally
 
 ### Prerequisites
 *   Java 21
@@ -42,7 +42,7 @@ export REDIS_PORT=6379
 ./mvnw spring-boot:run
 ```
 
-## 🐳 Docker
+## Docker
 
 ```bash
 docker build -t fleetops-vehicle-service:v1.0.0 .
