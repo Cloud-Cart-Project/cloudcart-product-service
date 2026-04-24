@@ -1,4 +1,4 @@
-package com.fleetops.vehicle.controller;
+﻿package com.fleetops.vehicle.controller;
 
 import com.fleetops.vehicle.entity.Vehicle;
 import com.fleetops.vehicle.entity.Vehicle.VehicleStatus;
@@ -8,6 +8,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +59,11 @@ public class VehicleController {
             return ResponseEntity.ok(vehicleService.getVehiclesByType(type));
         }
         if (status != null && !status.isEmpty()) {
-            return ResponseEntity.ok(vehicleService.getVehiclesByStatus(VehicleStatus.valueOf(status.toUpperCase())));
+            try {
+                return ResponseEntity.ok(vehicleService.getVehiclesByStatus(VehicleStatus.valueOf(status.toUpperCase())));
+            } catch (IllegalArgumentException e) {
+                return buildErrorResponse(400, "Bad Request", "Invalid status. Valid values: ACTIVE, IN_SERVICE, BREAKDOWN, RETIRED");
+            }
         }
         if (driverId != null && !driverId.isEmpty()) {
             return ResponseEntity.ok(vehicleService.getVehiclesByDriver(driverId));
@@ -135,6 +141,9 @@ public class VehicleController {
         if (!payload.containsKey("mileage")) {
             return ResponseEntity.badRequest().body("Missing 'mileage' in payload");
         }
+        if (payload.get("mileage") == null) {
+            return buildErrorResponse(400, "Bad Request", "Mileage is required");
+        }
 
         // DRIVER can only update mileage for their own assigned vehicle
         boolean isDriver = authentication.getAuthorities().stream()
@@ -159,6 +168,15 @@ public class VehicleController {
             case NOT_FOUND -> ResponseEntity.status(404).body("Vehicle not found");
             case INVALID -> ResponseEntity.badRequest().body("Mileage must be a non-negative number");
         };
+    }
+
+    private ResponseEntity<Map<String, Object>> buildErrorResponse(int status, String error, String message) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", status);
+        body.put("error", error);
+        body.put("message", message);
+        return ResponseEntity.status(status).body(body);
     }
 
     // â”€â”€â”€ ALERTS â€” MANAGER, ADMIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
